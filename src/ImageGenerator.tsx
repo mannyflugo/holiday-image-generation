@@ -114,6 +114,25 @@ export function ImageGenerator() {
     }
   };
 
+  const handleDownload = async (imageUrl: string, theme: string, timestamp: number) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `holiday-${theme.toLowerCase().replace(/\s+/g, '-')}-${new Date(timestamp).toISOString().split('T')[0]}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success("Image downloaded!");
+    } catch (error) {
+      toast.error("Failed to download image");
+      console.error(error);
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Upload Section */}
@@ -297,11 +316,22 @@ export function ImageGenerator() {
                 )}
                 
                 {generation.resultImageUrl && (
-                  <img
-                    src={generation.resultImageUrl}
-                    alt="Generated holiday image"
-                    className="mt-2 max-w-full h-auto rounded"
-                  />
+                  <div className="mt-2 space-y-2">
+                    <img
+                      src={generation.resultImageUrl}
+                      alt="Generated holiday image"
+                      className="max-w-full h-auto rounded"
+                    />
+                    <button
+                      onClick={() => handleDownload(generation.resultImageUrl!, generation.theme, generation._creationTime)}
+                      className="w-full bg-green-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                      Download Image
+                    </button>
+                  </div>
                 )}
               </div>
             ))}
